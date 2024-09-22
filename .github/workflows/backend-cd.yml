@@ -48,7 +48,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: PIP INSTALL
+      - name: Install dependencies
         run: pip install pipenv
 
       - name: Cache Python Dependencies
