@@ -34,9 +34,6 @@ jobs:
         with:
           path: ~/.local/share/virtualenvs
           key: deps-python-${{ hashFiles('**/Pipfile.lock') }}
-
-      - name: Run application
-        run: pipenv run serve
     
   test:
     name: Test
@@ -55,6 +52,9 @@ jobs:
       - name: Set up Python environment
         run: |
           pipenv install
+      
+      - name: Run linting
+        run: pipenv run lint
 
       - name: Cache Python Dependencies
         id: CachingData
