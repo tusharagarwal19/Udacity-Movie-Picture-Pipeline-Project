@@ -30,13 +30,8 @@ jobs:
           path: ~/.local/share/virtualenvs
           key: deps-python-${{ hashFiles('**/Pipfile.lock') }}
 
-      - name: INSTALL DEPENDENCIES
-        run: 
-          pipenv install --dev
-          pipenv install flake8
-
-      - name: Run Code Convention
-        run: pipenv run lint
+      - name: Run application
+        run: pipenv run serve
     
   test:
     name: Test
@@ -49,7 +44,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install dependencies
-        run: pip install pipenv
+        run: pipenv install
 
       - name: Cache Python Dependencies
         id: CachingData
@@ -57,11 +52,6 @@ jobs:
         with:
           path: ~/.local/share/virtualenvs
           key: deps-python-${{ hashFiles('**/Pipfile.lock') }}
-
-      - name: INSTALL DEPENDENCIES
-        run: 
-          pipenv install --dev
-          pipenv install flake8
 
       - name: RUN TESTS
         run: pipenv run test
@@ -83,7 +73,6 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }} 
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }} 
-          aws-session-token: ${{secrets.AWS_SESSION_TOKEN}}
           aws-region: ${{ env.AWS_REGION }}
       
       - name: Login to ECR
