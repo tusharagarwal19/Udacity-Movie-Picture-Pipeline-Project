@@ -4,6 +4,8 @@ on:
   pull_request:
     branches:
       - main
+    paths:
+      - 'starter/backend/**'
   workflow_dispatch:
 
 jobs:
@@ -17,20 +19,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install PIP
-        run: pip install pipenv
-
-      - name: Cache Dependencies
-        id: cache-dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.local/share/virtualenvs
-          key: deps-python-${{ hashFiles('**/Pipfile.lock') }}
-        
-      - name: INSTALL DEPENDENCIES
-        run: |
-          pipenv install --dev
-          pipenv install flake8
+      - name: Install dependencies
+        run: 
+          pip install pipenv
+          pip install flake8
+        working-directory: ./starter/backend
 
       - name: Run Linter
         run: pipenv run lint
@@ -46,7 +39,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Install dependencies
-        run: pip install pipenv
+        run: 
+          pip install pipenv
+          pip install flake8
       
       - name: Cache Dependencies
         id: cache-dependencies
@@ -54,11 +49,6 @@ jobs:
         with:
           path: ~/.local/share/virtualenvs
           key: deps-python-${{ hashFiles('**/Pipfile.lock') }}
-
-      - name: INSTALL DEPENDENCIES
-        run: |
-          pipenv install --dev
-          pipenv install flake8
 
       - name: Run Tests
         run: pipenv run test
@@ -72,9 +62,6 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
-
-      - name: Install dependencies
-        run: pipenv install
 
       - name: Build Docker Image
         run: docker build --tag mp-backend:latest .
