@@ -4,6 +4,8 @@ on:
   push:
     branches:
       - main
+    paths:
+      - 'starter/backend/**'
   workflow_dispatch:
 
 jobs:
@@ -93,10 +95,11 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           REPOSITORY: backend
-          IMAGE_TAG: ${{ github.sha }}
-          REACT_APP_MOVIE_API_URL: ${{ vars.REACT_APP_MOVIE_API_URL }}      
+          IMAGE_TAG: ${{ github.sha }}  
         run:  |
-          docker build --build-arg=REACT_APP_MOVIE_API_URL="http://$REACT_APP_MOVIE_API_URL" -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
+          echo Building docker image for backend ..
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG starter/backend/.
+          echo Pushing the backend docker image to ECR repo
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
       - name: Setup Kubeconfig
@@ -118,3 +121,4 @@ jobs:
           cd k8s
           kustomize edit set image backend=${{ secrets.AWS_ACCOUNT_ID }}.dkr.ecr.us-east-1.amazonaws.com/backend:latest
           kustomize build | kubectl apply -f -
+          kubectl get svc -A
