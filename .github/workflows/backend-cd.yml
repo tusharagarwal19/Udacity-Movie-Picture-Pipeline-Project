@@ -4,8 +4,7 @@ on:
   push:
     branches:
       - main
-    paths:
-      - 'starter/backend/**'
+      
   workflow_dispatch:
 
 jobs:
@@ -98,7 +97,7 @@ jobs:
           IMAGE_TAG: ${{ github.sha }}  
         run:  |
           echo Building docker image for backend ..
-          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG starter/backend/.
+          docker build -t $REGISTRY/$REPOSITORY:$IMAGE_TAG .
           echo Pushing the backend docker image to ECR repo
           docker push $REGISTRY/$REPOSITORY:$IMAGE_TAG
 
