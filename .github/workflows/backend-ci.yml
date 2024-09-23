@@ -19,11 +19,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: 
-          pip install pipenv
-          pip install flake8
-        working-directory: ./starter/backend
+      - name: Install pipenv and flake8
+        run: |
+          pip install --user pipenv flake8
+      
+      - name: Set up Python environment
+        run: |
+          pipenv install
 
       - name: Run Linter
         run: pipenv run lint
@@ -38,10 +40,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      - name: Install dependencies
-        run: 
-          pip install pipenv
-          pip install flake8
+      - name: Install pipenv and flake8
+        run: |
+          pip install --user pipenv flake8
+      
+      - name: Set up Python environment
+        run: |
+          pipenv install
       
       - name: Cache Dependencies
         id: cache-dependencies
