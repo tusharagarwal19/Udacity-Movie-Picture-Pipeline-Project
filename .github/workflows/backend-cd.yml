@@ -1,10 +1,9 @@
 name: Backend Continous Deployment workflow
 on:
-  workflow_dispatch:
   push:
     branches:
       - master 
-
+  workflow_dispatch:
 jobs:
   lint:
     runs-on: ubuntu-latest
