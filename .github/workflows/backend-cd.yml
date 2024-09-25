@@ -1,174 +1,91 @@
-name: Backend Continuous Deployment
+name: Backend Continous Deployment workflow
 on:
+  workflow_dispatch:
   push:
     branches:
-      - main
-  workflow_dispatch:
+      - master 
+
 jobs:
-  backend-cd-lint:
-    name: backend-cd-lint
+  lint:
     runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - name: Install pipenv
-        run: |
-          python -m pip install --upgrade pip
-          pip install pipenv
-      - name: Cache pipenv virtualenv
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.local/share/virtualenvs
-            ~/.cache/pip
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-      - name: Install the dependencies
-        run: |
-          cd starter/backend
-          pipenv install --dev
-      - name: Run linter
-        run: |
-          cd starter/backend
-          pipenv run lint
-        continue-on-error: false
-      - name: Run hadolint for dockerile
-        run: |
-          sudo wget -O /usr/local/bin/hadolint https://github.com/hadolint/hadolint/releases/download/v1.16.3/hadolint-Linux-x86_64 && sudo chmod +x /usr/local/bin/hadolint
-          /usr/local/bin/hadolint starter/backend/Dockerfile
-        continue-on-error: false
-  backend-cd-test:
-    name: backend-cd-test
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.10'
-      - name: Install pipenv
-        run: |
-          python -m pip install --upgrade pip
-          pip install pipenv
-      - name: Cache pipenv virtualenv
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.local/share/virtualenvs
-            ~/.cache/pip
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-      - name: Install the dependencies
-        run: |
-          cd starter/backend
-          pipenv install --dev
-      - name: Run tests
-        run: |
-          cd starter/backend
-          pipenv install
-          pipenv run test
-  backend-cd-build:
-    name: backend-cd-build
-    needs:
-      - backend-cd-test
-      - backend-cd-lint
-    runs-on: ubuntu-latest
+    
     steps:
       - name: Checkout code
-        uses: actions/checkout@v4
-      - name: Set up Python 3.10
-        uses: actions/setup-python@v5
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
           python-version: '3.10'
-      - name: Install pipenv
+
+      - name: Install Dependencies
+        working-directory: starter/backend
         run: |
           python -m pip install --upgrade pip
           pip install pipenv
-      - name: Cache pipenv virtualenv
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.local/share/virtualenvs
-            ~/.cache/pip
-          key: ${{ runner.os }}-pipenv-${{ hashFiles('**/Pipfile.lock') }}
-      - name: Install the dependencies
-        run: |
-          cd starter/backend
-          pipenv install --dev
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
-      - name: Login to ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-      - name: Build, tag, and push docker image to Amazon ECR
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_NAME: backend
-        run: |
-          echo Building docker image for backend ..
-          docker build -t $REGISTRY/$IMAGE_NAME:${GITHUB_SHA::7} starter/backend/.
-          echo Pushing the backend docker image to ECR repo
-          docker push $REGISTRY/$IMAGE_NAME:${GITHUB_SHA::7}
-  backend-cd-deploy:
-    name: backend-cd-deploy
+          pip install flake8
+      
+      - name: Run lint
+        run: cd starter/backend && pipenv run lint
+        
+
+  test:
     runs-on: ubuntu-latest
-    needs:
-      - backend-cd-build
+  
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
-      - name: Setup kubectl
-        uses: azure/setup-kubectl@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+      
+      - name: Setup Python
+        uses: actions/setup-python@v4
         with:
-          version: v1.29.0
-      - name: Set up AWS CLI
-        uses: aws-actions/configure-aws-credentials@v1
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: ${{ vars.AWS_REGION }}
-      - name: Login to ECR
-        id: login-ecr
-        uses: aws-actions/amazon-ecr-login@v2
-      - name: Generate Kubeconfig
+          python-version: '3.10'
+
+      - name: Install Dependencies
+        working-directory: starter/backend
         run: |
-          aws eks update-kubeconfig --region ${{ vars.AWS_REGION }} --name ${{vars.CLUSTER_NAME}}
-      - name: Setup Kustomize
-        uses: imranismail/setup-kustomize@v2
-      - name: Deploy backend App
-        env:
-          REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          IMAGE_NAME: backend
-          aws_account_id: ${{ vars.AWS_ACCOUNT_ID }}
-          aws_default_region: ${{ vars.AWS_REGION }}
-        run: | 
-          cd starter/backend/k8s
-          kustomize edit set image backend=$REGISTRY/$IMAGE_NAME:${GITHUB_SHA::7}
-          kustomize build | kubectl apply -f -
-      - name: Set REACT_APP_MOVIE_API_URL Repository Variable
-        env:
-          GH_TOKEN: ${{ secrets.TOKEN_GITHUB_X }}
-        run: |
-          kubectl rollout status deployment/backend
-          if [ $? -eq 0 ]; then
-            echo "Rollout successful. Fetching the external IP or DNS name..."
-            # Get the external IP or DNS name of the service
-            EXTERNAL_IP=$(kubectl get svc backend -o json | jq -r '.status.loadBalancer.ingress[0].hostname')
-            # Check if the EXTERNAL_IP is not empty
-            echo "Check if the EXTERNAL_IP is not empty"
-              if [ -n "$EXTERNAL_IP" ]; then
-                echo "External IP or DNS name: $EXTERNAL_IP"
-                gh secret set REACT_APP_MOVIE_API_URL --body "$EXTERNAL_IP"
-              else
-                  echo "External IP or DNS name not available yet."
-              fi
-          else
-            echo "Rollout failed."
-          fi
+          python -m pip install --upgrade pip
+          pip install pipenv
+          pip install flake8
+      
+      - name: Run tests
+        working-directory: starter/backend
+        run: pipenv install pytest && pipenv run test
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, test]
+
+    steps: 
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v2
+      with:
+        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID}}
+        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY}}
+        aws-region: ${{ secrets.AWS_REGION}}
+        
+    - name: Logging into ECR
+      uses: aws-actions/amazon-ecr-login@v2
+  
+    - name: Build and Push Docker Image
+      working-directory: starter/backend
+      run: |
+        docker build -t backend:${GITHUB_SHA} .
+        docker tag backend:${GITHUB_SHA} 194719225043.dkr.ecr.us-east-1.amazonaws.com/backend:${GITHUB_SHA}
+        docker push 194719225043.dkr.ecr.us-east-1.amazonaws.com/backend:${GITHUB_SHA}
+
+    - name: Configuring Kubeconfig
+      run:
+       aws eks update-kubeconfig --name cluster --region us-east-1
+
+
+    - name: Updating Kubernetes image
+      run: |
+        cd ./starter/backend/k8s && kustomize edit set image backend=194719225043.dkr.ecr.us-east-1.amazonaws.com/backend:${GITHUB_SHA}
+    
+    - name: Apply kubectl
+      run: |
+        cd ./starter/backend/k8s && kustomize build | kubectl apply -f -
