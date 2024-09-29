@@ -4,6 +4,8 @@ on:
   push:
     branches:
         - main
+    paths:
+      - 'starter/backend/**'
 
 env:
   NODE_VERSION: '18.x'
