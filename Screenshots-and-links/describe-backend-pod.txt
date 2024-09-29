@@ -1,0 +1,54 @@
+.kube root$ kubectl describe pod backend-5d46b84d44-2sng5
+Name:         backend-5d46b84d44-2sng5
+Namespace:    default
+Priority:     0
+Node:         ip-10-0-1-126.ec2.internal/10.0.1.126
+Start Time:   Sun, 29 Sep 2024 15:33:49 +0000
+Labels:       app=backend
+              pod-template-hash=5d46b84d44
+Annotations:  <none>
+Status:       Running
+IP:           10.0.1.103
+IPs:
+  IP:           10.0.1.103
+Controlled By:  ReplicaSet/backend-5d46b84d44
+Containers:
+  backend:
+    Container ID:   containerd://32bbe51002cf1055219caf9bbcf216de9106ecb66ba32da657f7f164c7f28900
+    Image:          376518650114.dkr.ecr.us-east-1.amazonaws.com/backend:53d1e2db4dc13fc2bd0da7ba6282a03de37c2944
+    Image ID:       376518650114.dkr.ecr.us-east-1.amazonaws.com/backend@sha256:ff6f6d3c4af385aa6223dcb55f81671e554439632ba94cb7ef1842ea22f931f4
+    Port:           5000/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Sun, 29 Sep 2024 15:34:09 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-zct78 (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  kube-api-access-zct78:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type     Reason            Age   From               Message
+  ----     ------            ----  ----               -------
+  Warning  FailedScheduling  18m   default-scheduler  0/2 nodes are available: 1 node(s) had untolerated taint {node.kubernetes.io/not-ready: }, 1 node(s) were unschedulable. preemption: 0/2 nodes are available: 2 Preemption is not helpful for scheduling.
+  Normal   Scheduled         16m   default-scheduler  Successfully assigned default/backend-5d46b84d44-2sng5 to ip-10-0-1-126.ec2.internal
+  Normal   Pulling           16m   kubelet            Pulling image "376518650114.dkr.ecr.us-east-1.amazonaws.com/backend:53d1e2db4dc13fc2bd0da7ba6282a03de37c2944"
+  Normal   Pulled            16m   kubelet            Successfully pulled image "376518650114.dkr.ecr.us-east-1.amazonaws.com/backend:53d1e2db4dc13fc2bd0da7ba6282a03de37c2944" in 18.748820205s (18.749117955s including waiting)
+  Normal   Created           16m   kubelet            Created container backend
+  Normal   Started           16m   kubelet            Started container backend

@@ -1,0 +1,54 @@
+.kube root$ kubectl describe pod frontend-5fc774886b-cgmhq
+Name:         frontend-5fc774886b-cgmhq
+Namespace:    default
+Priority:     0
+Node:         ip-10-0-1-126.ec2.internal/10.0.1.126
+Start Time:   Sun, 29 Sep 2024 15:45:46 +0000
+Labels:       app=frontend
+              pod-template-hash=5fc774886b
+Annotations:  <none>
+Status:       Running
+IP:           10.0.1.162
+IPs:
+  IP:           10.0.1.162
+Controlled By:  ReplicaSet/frontend-5fc774886b
+Containers:
+  frontend:
+    Container ID:   containerd://4e80b1d0d48951499985225fb53f00a3c6b4f063f1443f5a907b0d0e2ff0b3e5
+    Image:          376518650114.dkr.ecr.us-east-1.amazonaws.com/frontend:53d1e2db4dc13fc2bd0da7ba6282a03de37c2944
+    Image ID:       376518650114.dkr.ecr.us-east-1.amazonaws.com/frontend@sha256:53b9bdce355bbe7ccd285724f54e8d2634a9dc066577f4b3cc382d5821bba12b
+    Port:           3000/TCP
+    Host Port:      0/TCP
+    State:          Running
+      Started:      Sun, 29 Sep 2024 15:46:05 +0000
+    Ready:          True
+    Restart Count:  0
+    Environment:    <none>
+    Mounts:
+      /var/run/secrets/kubernetes.io/serviceaccount from kube-api-access-p6wgt (ro)
+Conditions:
+  Type              Status
+  Initialized       True 
+  Ready             True 
+  ContainersReady   True 
+  PodScheduled      True 
+Volumes:
+  kube-api-access-p6wgt:
+    Type:                    Projected (a volume that contains injected data from multiple sources)
+    TokenExpirationSeconds:  3607
+    ConfigMapName:           kube-root-ca.crt
+    ConfigMapOptional:       <nil>
+    DownwardAPI:             true
+QoS Class:                   BestEffort
+Node-Selectors:              <none>
+Tolerations:                 node.kubernetes.io/not-ready:NoExecute op=Exists for 300s
+                             node.kubernetes.io/unreachable:NoExecute op=Exists for 300s
+Events:
+  Type    Reason     Age    From               Message
+  ----    ------     ----   ----               -------
+  Normal  Scheduled  7m5s   default-scheduler  Successfully assigned default/frontend-5fc774886b-cgmhq to ip-10-0-1-126.ec2.internal
+  Normal  Pulling    7m5s   kubelet            Pulling image "376518650114.dkr.ecr.us-east-1.amazonaws.com/frontend:53d1e2db4dc13fc2bd0da7ba6282a03de37c2944"
+  Normal  Pulled     6m46s  kubelet            Successfully pulled image "376518650114.dkr.ecr.us-east-1.amazonaws.com/frontend:53d1e2db4dc13fc2bd0da7ba6282a03de37c2944" in 18.726454987s (18.726474083s including waiting)
+  Normal  Created    6m46s  kubelet            Created container frontend
+  Normal  Started    6m46s  kubelet            Started container frontend
+.kube root$ 
