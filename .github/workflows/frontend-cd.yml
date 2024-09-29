@@ -4,9 +4,7 @@ on:
   push:
     branches:
         - main
-    paths:
-      - 'starter/frontend/**'
-    
+
 env:
   NODE_VERSION: '18.x'
 
